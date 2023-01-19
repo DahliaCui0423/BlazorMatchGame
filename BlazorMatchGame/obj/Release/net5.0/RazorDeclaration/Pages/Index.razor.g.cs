@@ -110,18 +110,19 @@ using System.Timers;
         "🐻", "🐻",
         "🦊", "🦊",
         "🐯", "🐯",
-        
-  
     };
 
-    
-
-#line default
-#line hidden
-#nullable disable
-#nullable restore
-#line 117 "/Users/cuiwenyue/Projects/BlazorMatchGame/BlazorMatchGame/Pages/Index.razor"
-                
+    List<string> emptyEmoji = new List<string>()
+{
+        "","",
+        "","",
+        "","",
+        "","",
+        "","",
+        "","",
+        "","",
+        "","",
+    };
 
     List<string> shuffledAnimals = new List<string>();
     int matchesFound = 0;
@@ -134,7 +135,6 @@ using System.Timers;
     int bestTime = 0;
     bool playButtonShow = false;
     bool animalIconShow = false;
-    int playLevelListLength = 16;
 
     protected override void OnInitialized()
     {
@@ -147,71 +147,58 @@ using System.Timers;
 
     private void SetUpGame()
     {
-        
+        emptyEmoji = new List<string>()
+        {
+        "","",
+        "","",
+        "","",
+        "","",
+        "","",
+        "","",
+        "","",
+        "","",
+        };
+        animalIconShow = true;
+        // Reload new animal list
+        Random random = new Random();
+        shuffledAnimals = animalEmoji
+            .OrderBy(item => random.Next())
+            .ToList();
 
-#line default
-#line hidden
-#nullable disable
-#nullable restore
-#line 153 "/Users/cuiwenyue/Projects/BlazorMatchGame/BlazorMatchGame/Pages/Index.razor"
-                
-    animalIconShow = true;
-    // Reload new animal list
-    Random random = new Random();
-    shuffledAnimals = animalEmoji;
-    
+        // Reset the matches
+        matchesFound = 0;
 
-#line default
-#line hidden
-#nullable disable
-#nullable restore
-#line 175 "/Users/cuiwenyue/Projects/BlazorMatchGame/BlazorMatchGame/Pages/Index.razor"
-       
+        // Reset the mistakes
+        mistakes = 0;
 
-    shuffledAnimals = shuffledAnimals
-        .OrderBy(item => random.Next())
-        .ToList();
+        // Reset the timer
+        tenthsOfSecondsElapsed = 0;
 
+        //DRAFT: Try to let the animal icons show 3 secs then disappear
+        //FAIL: It stop the whole game from loading, the game will show up with empty grids.
+        //System.Threading.Thread.Sleep(3000);
+        //animalIconShow = false;
 
-    // Reset the matches
-    matchesFound = 0;
+    }
 
-    // Reset the mistakes
-    mistakes = 0;
+    string lastAnimalFound = string.Empty;
+    string lastDescription = string.Empty;
+    int lastNumber;
 
-    // Reset the timer
-    tenthsOfSecondsElapsed = 0;
-
-    //DRAFT: Try to let the animal icons show 3 secs then disappear
-    //FAIL: It stop the whole game from loading, the game will show up with empty grids.
-    //System.Threading.Thread.Sleep(3000);
-    //animalIconShow = false;
-
-}
-
-string lastAnimalFound = string.Empty;
-string lastDescription = string.Empty;
-int lastNumber = 0;
-
-private void ButtonClick(string animal, string animalDescription, int number)
-{
-
-    if (lastAnimalFound == string.Empty)
+    private void ButtonClick(string animal, string animalDescription, int number)
     {
-        // First selection of the pair. Remember it.
-        lastAnimalFound = animal;
-        lastDescription = animalDescription;
-            
 
-#line default
-#line hidden
-#nullable disable
-#nullable restore
-#line 214 "/Users/cuiwenyue/Projects/BlazorMatchGame/BlazorMatchGame/Pages/Index.razor"
-                            
+        if (lastAnimalFound == string.Empty)
+        {
+            // First selection of the pair. Remember it.
+            lastAnimalFound = animal;
+            lastDescription = animalDescription;
+            lastNumber = number;
 
             // timer start when click the first button
             timer.Start();
+
+            emptyEmoji[number] = animal;
 
         }
         else if ((lastAnimalFound == animal) && (animalDescription != lastDescription))
@@ -221,87 +208,72 @@ private void ButtonClick(string animal, string animalDescription, int number)
             lastAnimalFound = string.Empty;
 
             // Replace found animals with empty string to hide them
-            shuffledAnimals = shuffledAnimals
-                .Select(a => a.Replace(animal, string.Empty))
-                .ToList();
-
             
 
 #line default
 #line hidden
 #nullable disable
 #nullable restore
-#line 231 "/Users/cuiwenyue/Projects/BlazorMatchGame/BlazorMatchGame/Pages/Index.razor"
-                                            
+#line 189 "/Users/cuiwenyue/Projects/BlazorMatchGame/BlazorMatchGame/Pages/Index.razor"
+                            
 
-            // Add number of matches that have been found
-            matchesFound++;
+        emptyEmoji[number] = animal;
 
-            // Reload Game if every matches found
-            if (matchesFound == (shuffledAnimals.Count)/2)
+        // Add number of matches that have been found
+        matchesFound++;
+
+        // Reload Game if every matches found
+        if (matchesFound == 8)
+        {
+
+            if ((bestTime == 0) || (tenthsOfSecondsElapsed <= bestTime))
             {
-
-                if ((bestTime == 0) || (tenthsOfSecondsElapsed <= bestTime))
-                {
-                    bestTime = tenthsOfSecondsElapsed;
-                    bestTimeToDisplay = (bestTime / 10F).ToString("0.0s");
-                }
-
-
-                // Stop the timer
-                timer.Stop();
-                playButtonShow = true;
+                bestTime = tenthsOfSecondsElapsed;
+                bestTimeToDisplay = (bestTime / 10F).ToString("0.0s");
             }
-        }
-        else if ((lastAnimalFound == animal) && (animalDescription == lastDescription))
-        {
-            
 
-#line default
-#line hidden
-#nullable disable
-#nullable restore
-#line 254 "/Users/cuiwenyue/Projects/BlazorMatchGame/BlazorMatchGame/Pages/Index.razor"
-                                                  
 
-            // Click on the same button
-            lastAnimalFound = animal;
-            lastDescription = animalDescription;
-        }
-        else
-        {
-            
-
-#line default
-#line hidden
-#nullable disable
-#nullable restore
-#line 263 "/Users/cuiwenyue/Projects/BlazorMatchGame/BlazorMatchGame/Pages/Index.razor"
-                                                    
-
-            // pair don't match, reset selection.
-            lastAnimalFound = string.Empty;
-            mistakes++;
+            // Stop the timer
+            timer.Stop();
+            playButtonShow = true;
         }
     }
-
-    private void Timer_Tick(Object source, ElapsedEventArgs e)
+    else if ((lastAnimalFound == animal) && (animalDescription == lastDescription))
     {
-        InvokeAsync(() =>
-        {
+        emptyEmoji[number] = string.Empty;
 
-            tenthsOfSecondsElapsed++;
-            timeDisplay = (tenthsOfSecondsElapsed / 10F)
-            .ToString("0.0s");
-            StateHasChanged();
-        });
+        // Click on the same button
+        lastAnimalFound = animal;
+        lastDescription = animalDescription;
     }
-
-    private void PlayButtonClick()
+    else
     {
-        SetUpGame();
-        playButtonShow = false;
+        emptyEmoji[lastNumber] = string.Empty;
+        emptyEmoji[number] = string.Empty;
+
+        // pair don't match, reset selection.
+        lastAnimalFound = string.Empty;
+        mistakes++;
     }
+}
+
+private void Timer_Tick(Object source, ElapsedEventArgs e)
+{
+    InvokeAsync(() =>
+    {
+
+        tenthsOfSecondsElapsed++;
+        timeDisplay = (tenthsOfSecondsElapsed / 10F)
+        .ToString("0.0s");
+        StateHasChanged();
+    });
+}
+
+private void PlayButtonClick()
+{
+    SetUpGame();
+    playButtonShow = false;
+}
 
     
 
@@ -309,7 +281,7 @@ private void ButtonClick(string animal, string animalDescription, int number)
 #line hidden
 #nullable disable
 #nullable restore
-#line 305 "/Users/cuiwenyue/Projects/BlazorMatchGame/BlazorMatchGame/Pages/Index.razor"
+#line 249 "/Users/cuiwenyue/Projects/BlazorMatchGame/BlazorMatchGame/Pages/Index.razor"
              
     //1. Add Play Again Button (Done)
     //2. Fix the bug of clicking same button and count as wrong (Done)
